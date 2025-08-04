@@ -3,6 +3,7 @@ import { dummyStoriesData } from '../assets/assets'
 import { Plus } from 'lucide-react'
 import moment from 'moment'
 import StoryModal from './StoryModal';
+import StoryView from './StoryView';
 
 function StoriesBar() {
 
@@ -19,7 +20,7 @@ function StoriesBar() {
   }, [])
 
   return (
-    <div className='w-screen sm:w-[clac(100vh-240px)] lg:max-w-2xl noscrollbar overflow-x-auto px-4 '>
+    <div className='w-screen sm:w-[clac(100vh-240px)] lg:max-w-2xl no-scrollbar overflow-x-auto px-4 '>
       
       <div className="flex gap-4 pb-5">
         {/* Add story card */}
@@ -38,7 +39,7 @@ function StoriesBar() {
 
         {
           stories.map((story, index) => (
-            <div key={index} className={`rounded-lg relative shadow min-w-30 max-w-30 max-h-40 cursor-pointer hover:shadow-lg transition-all duration-200 bg-gradient-to-b from-indigo-300 to-purple-400 hover:from-indigo-500 hover:to-purple-600 active:scale-95`}>
+            <div onClick={() => setViewStory(story)} key={index} className={`rounded-lg relative shadow min-w-30 max-w-30 max-h-40 cursor-pointer hover:shadow-lg transition-all duration-200 bg-gradient-to-b from-indigo-300 to-purple-400 hover:from-indigo-500 hover:to-purple-600 active:scale-95`}>
               <img src={story.user.profile_picture} alt="" className='absolute size-8 top-3 left-3 z-10 rounded-full ring ring-gray-100 shadow '/>
               <p className='absolute top-18 left-3 text-white/60 text-sm truncate max-w-24'>  {story.content}</p>
               <p className='text-white absolute bottom-1 right-2 text-xs z-10 '>{moment(story.createdAt).fromNow()}</p>
@@ -66,6 +67,11 @@ function StoriesBar() {
       {/* Add story Modal */}
       {
         showModal && <StoryModal setShowModal={setShowModal} fetchStories={fetchStories} />
+      }
+
+      {/* View Story */}
+      {
+        viewStory && <StoryView viewStory={viewStory} setViewStory={setViewStory} />
       }
     </div>
   )
