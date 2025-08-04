@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { dummyPostsData } from '../assets/assets';
 import Loading from '../components/Loading';
 import StoriesBar from '../components/StoriesBar';
+import PostCard from '../components/PostCard';
 
 function Feed() {
 
@@ -27,7 +28,9 @@ function Feed() {
         <StoriesBar />
         
         <div className="p-4 space-y-6">
-          List of Posts
+          {feed.map((post) => (
+            <PostCard key={post._id} post={post} />
+          ))}
         </div>
       </div>
 
