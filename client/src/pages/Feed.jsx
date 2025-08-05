@@ -4,6 +4,7 @@ import Loading from '../components/Loading';
 import StoriesBar from '../components/StoriesBar';
 import PostCard from '../components/PostCard';
 import RecentMessages from '../components/RecentMessages';
+import { useNavigate } from 'react-router-dom';
 
 function Feed() {
 
@@ -18,7 +19,7 @@ function Feed() {
   useEffect(() => {
     fetchFeed();
   }, []);
-
+  
   return !loading ? (
     <div className='h-full overflow-y-scroll no-scrollbar py-10 xl:pr-5 flex items-start justify-center xl:gap-8'>
 
