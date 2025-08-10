@@ -46,7 +46,7 @@ const Connections = () => {
         <div className="inline-flex flex-wrap items-center border border-gray-200 rounded-md p-1 bg-white shadow-sm">
           {
             dataArray.map((tab) => (
-              <button key={tab.label} className={`cursor-pointer flex items-center gap-1 px-3 py-1 rounded-md hover:bg-gray-100 transition ${currentTab === tab.label ? 'bg-white font-medium text-black' : 'text-gray-500 hover-text-black'}`} onClick={() => setCurrentTab(tab.label)}>
+              <button key={tab.label} className={`cursor-pointer flex items-center gap-1 px-3 py-1 rounded-md hover:bg-gray-100 transition ${currentTab === tab.label ? 'bg-white font-medium text-black' : 'text-gray-500 hover:text-black'}`} onClick={() => setCurrentTab(tab.label)}>
                 <tab.icon className='w-4 h-4' />
                 <span className='ml-1'>{tab.label}</span>
 
