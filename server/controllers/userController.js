@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import fs from 'fs';
 import Connection from "../models/Connection.js";
 import { connections } from "mongoose";
+import Post from "../models/Post.js";
 
 
 // Get user data from db
@@ -266,6 +267,25 @@ export const acceptConectionRequest = async (req, res) => {
         await connection.save();
         
         res.json({success: true, message: "Connection accepted successfully"});
+    }
+    catch (error) {
+        res.json({success: false, message: error.message})
+    }
+}
+
+// Get user profile
+export const getUserProfiles = async (req, res) => {
+    try {
+        const {profileId} = req.body;
+        const profile = await User.findById(profileId);
+
+        if(!profile){
+            res.json({success: false, message: "Profile not found"});
+        }
+
+        const posts = await Post.find({user: profileId}).populate('user');
+
+        res.json({success: true, message: "Profile found", posts, profile});
     }
     catch (error) {
         res.json({success: false, message: error.message})
