@@ -3,6 +3,7 @@ import imageKit from "../configs/imageKit.js";
 import User from "../models/User.js";
 import fs from 'fs';
 import Connection from "../models/Connection.js";
+import { connections } from "mongoose";
 
 
 // Get user data from db
@@ -214,6 +215,57 @@ export const sendConectionRequest = async (req, res) => {
         }
         
         return res.json({success: false, message: "Connection request pending"});
+    }
+    catch (error) {
+        res.json({success: false, message: error.message})
+    }
+}
+
+// Get user Conection request
+export const getUserConections = async (req, res) => {
+    try {
+        const {userId} = req.auth();
+        const user = await User.findById(userId).populate('connections followers following');
+
+        const connections = user.connections;
+        const followers = user.followers;
+        const following = user.following;
+
+        const pendingConnections = (await Connection.find(
+            {to_user_id: userId, status: 'pending'}
+        ).populate('from_user_id')).map(connection => connection.from_user_id);
+        
+        res.json({success: true, connections, followers, following, pendingConnections});
+    }
+    catch (error) {
+        res.json({success: false, message: error.message})
+    }
+}
+
+// Accept Conection request
+export const acceptConectionRequest = async (req, res) => {
+    try {
+        const {userId} = req.auth();
+        const {id} = req.body;
+
+        const connection = await User.find({from_user_id: id, to_user_id: userId});
+
+        if(!connection){
+            return res.json({success: false, message: "Connection not found"});
+        }
+        
+        const user = await User.findById(userId);
+        user.connections.puch(id);
+        await user.save();
+
+        const toUser = await User.findById(id);
+        toUser.connections.puch(userId);
+        await toUser.save();
+        
+        connection.status = 'accepted';
+        await connection.save();
+        
+        res.json({success: true, message: "Connection accepted successfully"});
     }
     catch (error) {
         res.json({success: false, message: error.message})
