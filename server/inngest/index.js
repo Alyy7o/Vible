@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import sendEmail from "../configs/nodeMailer.js";
 import Story from "../models/Story.js";
+import Message from "../models/Message.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "vible-app" });
@@ -133,10 +134,47 @@ const deleteStory = inngest.createFunction(
   }
 )
 
+// Injest send notification of unseen messages
+const sendNotificationOfUnseenMessages = inngest.createFunction(
+  { id: "send-unseen-messages-notification" },
+  { cron: "TZ=America/New_York 0 9 * * *" }, // every day 9 am
+
+  async ({step}) => {
+    const messages = await Message.find({seen: false}).populate('to_user_id');
+    const unseenCount = {};
+
+    messages.map(message => {
+      unseenCount[message.to_user_id._id] = (unseenCount[message.to_user_id._id] || 0) + 1;
+    })
+
+    for(const userId in unseenCount){
+        const user = await User.findById(userId);
+
+        const subject = `📬 You have ${unseenCount[userId]} unseen messages`;
+        const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
+                      <h2>Hi ${user.full_name},</h2>
+                      <p>You have ${unseenCount[userId]} unseen messages</p>
+                      <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">here</a> to accept or reject the request</p>
+                      <br />
+                      <p>Thanks,<br />Vible - Stay Connected</p>
+                    </div>`;
+
+        await sendEmail({
+          to: user.email,
+          subject,
+          body
+        });
+
+        return {message: "Notification sent."}
+    }
+  }
+)
+
 export const functions = [
     syncUserCreation,
     syncUserUpdation,
     syncUserDeletion,
     sendConectionRequestReminder,
-    deleteStory
+    deleteStory,
+    sendNotificationOfUnseenMessages
 ];
