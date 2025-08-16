@@ -64,7 +64,7 @@ export const getFeedPosts = async (req, res) => {
     res.json({success: true, posts})
     }
     catch (error) {
-        res.json({success: false, message: error.message})
+        res.json({success: false, message: error.message});
     }
 }
 

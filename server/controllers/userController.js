@@ -5,6 +5,7 @@ import fs from 'fs';
 import Connection from "../models/Connection.js";
 import { connections } from "mongoose";
 import Post from "../models/Post.js";
+import { inngest } from "../inngest/index.js";
 
 
 // Get user data from db
@@ -205,10 +206,17 @@ export const sendConectionRequest = async (req, res) => {
         })
         
         if(!connection){
-            await Connection.create({
+            const newConnection = await Connection.create({
                 from_user_id: userId,
                 to_user_id: id
             });
+
+            // send connection request email
+            await inngest.send({
+                name: "app/connection-request",
+                data: {connectionId: newConnection._id}
+            })
+
             return res.json({success: true, message: "Connection request sent successfully"});
         }
         else if(connection && connection.status === 'accepted'){
