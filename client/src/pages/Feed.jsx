@@ -5,14 +5,37 @@ import StoriesBar from '../components/StoriesBar';
 import PostCard from '../components/PostCard';
 import RecentMessages from '../components/RecentMessages';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 function Feed() {
 
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
 
   const fetchFeed = async () => {
-    setFeed(dummyPostsData);
+    try{
+      setLoading(true);
+
+      const { data } = await api.get(
+        "/api/post/feed",
+        {
+          headers: { Authorization: `Bearer ${await getToken()}` },
+        }
+        )
+
+        if (data.success) {
+          setFeed(data.posts)
+        } 
+        else {
+          toast.error(data.message);
+        }
+      } 
+      catch (error) {
+        toast.error(error.message);
+    }
     setLoading(false);
   }
 

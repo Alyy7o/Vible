@@ -1,12 +1,12 @@
 import express from 'express';
 import { protect } from '../middlewares/auth.js';
 import { upload } from '../configs/multer.js';
-import { addPost, getFeedPosts, LikePost } from '../controllers/postController.js';
+import { addPost, getFeedPosts, likePost } from '../controllers/postController.js';
 
 const postRouter = express.Router();
 
 postRouter.post('/add', upload.array('images', 4),protect, addPost);
 postRouter.get('/feed', protect, getFeedPosts);
-postRouter.post('/like', protect, LikePost);
+postRouter.post('/like', protect, likePost);
 
 export default postRouter;
