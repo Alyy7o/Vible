@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { dummyUserData } from '../assets/assets';
 import { Image, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
 
 const CreatePost = () => {
 
@@ -13,7 +14,7 @@ const CreatePost = () => {
 
   }
 
-  const user = dummyUserData;
+  const user = useSelector((state) => state.user.value);
   
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 to-white'>

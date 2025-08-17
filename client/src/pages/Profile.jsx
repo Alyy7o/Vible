@@ -1,29 +1,61 @@
 import React, { useEffect, useState } from "react";
 import { dummyPostsData, dummyUserData } from "../assets/assets";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { Link, useParams } from "react-router-dom";
 import Loading from "../components/Loading";
 import UserProfileInfo from "../components/UserProfileInfo";
 import PostCard from "../components/PostCard";
 import moment from "moment";
 import ProfileModal from "../components/ProfileModal";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import api from "../api/axios";
+
 
 const Profile = () => {
-  const { user: clerkUser } = useUser();
+
+  const currentUser = useSelector((state) => state.user.value);
+
+  const { getToken } = useAuth();
   const { profileId } = useParams();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
 
-  const fetchUser = async () => {
-    setUser(dummyUserData);
-    setPosts(dummyPostsData);
-  };
+  const fetchUser = async (profileId) => {
+  const token = await getToken();
+
+  try {
+    const { data } = await api.post(
+      "/api/user/profiles",
+      { profileId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (data.success) {
+      setUser(data.profile);
+      setPosts(data.posts);
+    } else {
+      toast.error(data.message);
+    }
+  } catch (error) {
+    console.error("fetchUser error", error);
+    toast.error(error.message);
+  }
+};
+
 
   useEffect(() => {
-    fetchUser();
-  }, [profileId]);
+    if(profileId){
+      fetchUser(profileId);
+    }
+    else{
+      fetchUser(currentUser._id);
+    }
+  }, [profileId, currentUser]);
 
   return user ? (
     <div className="relative h-full p-6 overflow-y-scroll bg-gray-50">
@@ -32,9 +64,9 @@ const Profile = () => {
         <div className="shadow overflow-hidden rounded-2xl bg-white ">
           {/* Cover Photo */}
           <div className="h-40 md:h-56 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
-            {user.cover_photo && (
+            {user.cover_picture && (
               <img
-                src={user.cover_photo}
+                src={user.cover_picture}
                 alt="cover"
                 className="w-full h-full object-cover rounded-lg"
               />
