@@ -258,10 +258,8 @@ export const acceptConectionRequest = async (req, res) => {
     try {
         const {userId} = req.auth();
         const {id} = req.body;
-
-        console.log("user id " + id);
-
-        const connection = await User.find({from_user_id: id, to_user_id: userId});
+        
+        const connection = await Connection.findOne({from_user_id: id, to_user_id: userId});
 
         if(!connection){
             return res.json({success: false, message: "Connection not found"});
