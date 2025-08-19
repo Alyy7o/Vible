@@ -1,17 +1,20 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Users, UserPlus, UserRoundPen, MessageSquare, UserCheck } from 'lucide-react';
-import { 
-  dummyConnectionsData as connections,
-  dummyFollowersData as followers,
-  dummyFollowingData as following,
-  dummyPendingConnectionsData as pendingConnections,
- } from '../assets/assets';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
+import { fetchConnections } from "../features/connections/connectionsSlice";
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 const Connections = () => {
 
   const navigate = useNavigate();
-  const [currentTab, setCurrentTab] = React.useState('Followers');
+  const { getToken } = useAuth();
+  const dispatch = useDispatch();
+  const [currentTab, setCurrentTab] = useState('Followers');
+
+  const {connections, pendingConnections, followers, following} = useSelector((state) => state.connections );
 
   const dataArray = [
     {label: 'Followers', icon: Users, value: followers},
@@ -19,6 +22,56 @@ const Connections = () => {
     {label: 'Connections', icon: UserPlus, value: connections},
     {label: 'Pending', icon: UserRoundPen, value: pendingConnections},
   ]
+
+  const handleUnFollow = async (userId) => {
+    try{
+        const { data } = await api.post(
+          "/api/user/unfollow",
+          {id: userId},
+          {
+            headers: { Authorization: `Bearer ${await getToken()}` },
+          }
+          )
+          if (data.success) {
+            toast.success(data.message);
+            dispatch(fetchConnections(await getToken()));
+          } 
+          else {
+            toast.error(data.message);
+          }
+    } 
+    catch (error) {
+      toast.error(error.message);
+    }
+  }
+
+  const acceptConnection = async (userId) => {
+    try{
+        const { data } = await api.post(
+          "/api/user/accept",
+          {id: userId},
+          {
+            headers: { Authorization: `Bearer ${await getToken()}` },
+          }
+          )
+          if (data.success) {
+            toast.success(data.message);
+            dispatch(fetchConnections(await getToken()));
+          } 
+          else {
+            toast.error(data.message);
+          }
+    } 
+    catch (error) {
+      toast.error(error.message);
+    }
+  }
+
+  useEffect(() => {
+    getToken().then((token) => {
+      dispatch(fetchConnections(token))
+    })
+  }, [])
 
   return (
     <div className='min-h-screen relative bg-slate-50'>
@@ -63,7 +116,7 @@ const Connections = () => {
         {/* Connections */}
         <div className="flex flex-wrap gap-6 mt-6">
           {
-            dataArray.find(tab => tab.label === currentTab).value.map((user) => (
+            dataArray.find((item) => item.label === currentTab).value.map((user) => (
               <div className="w-full max-w-88 flex gap-5 p-6 bg-white shadow rounded-md" key={user._id}>
                 <img src={user.profile_picture} className='rounded-full w-12 h-12 shadow-md mx-auto' alt="" />
 
@@ -78,7 +131,12 @@ const Connections = () => {
                     }
                     {
                       currentTab === 'Following' && (
-                        <button onClick={() => navigate(`/profile/${user._id}`)} className='w-full p-2 text-sm rounded bg-slate-100 hover:bg-slate-200 active:scale-95 transition text-black cursor-pointer'>Unfollow</button>
+                        <button onClick={() => handleUnFollow(user._id)} className='w-full p-2 text-sm rounded bg-slate-100 hover:bg-slate-200 active:scale-95 transition text-black cursor-pointer'>Unfollow</button>
+                      )
+                    }
+                    {
+                      currentTab === 'Pending' && (
+                        <button onClick={() => acceptConnection(user._id)} className='w-full p-2 text-sm rounded bg-slate-100 hover:bg-slate-200 active:scale-95 transition text-black cursor-pointer'>Accept</button>
                       )
                     }
                     {

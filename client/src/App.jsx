@@ -15,6 +15,7 @@ import {Toaster} from 'react-hot-toast'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { fetchUser } from './features/user/userSlice'
+import { fetchConnections } from './features/connections/connectionsSlice'
 
 
 function App() {
@@ -27,18 +28,7 @@ function App() {
       if(user){
         const token = await getToken();
         dispatch(fetchUser(token));
-          // console.log('App Token received:', token); 
-      // try {
-      //   const token = await getToken();
-      //   const response = await dispatch(fetchUser(token)).unwrap();
-      //   console.log('User data received:', response);
-      // } catch (error) {
-      //   console.error('Error fetching user:', {
-      //     message: error.message,
-      //     stack: error.stack,
-      //     response: error.response
-      //   });
-      // }
+        dispatch(fetchConnections(token));
     }
     }
     fetchData();

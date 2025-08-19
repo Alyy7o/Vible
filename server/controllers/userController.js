@@ -140,7 +140,7 @@ export const followUser = async (req, res) => {
         }
 
         // increase following of this user
-        user.following.puch(id);
+        user.following.push(id);
         await user.save();
         
         // increase follower of other user
@@ -189,8 +189,10 @@ export const sendConectionRequest = async (req, res) => {
         // user can send only 20 req in 24 hours
         const last24hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const connectionRequests = await Connection.find(
-            {from_user_id: userId},
-            {created_at: {$gt: last24hours}},
+            {
+                from_user_id: userId,
+                created_at: {$gt: last24hours}
+            },
         )
 
         if(connectionRequests.length >= 20){
@@ -257,6 +259,8 @@ export const acceptConectionRequest = async (req, res) => {
         const {userId} = req.auth();
         const {id} = req.body;
 
+        console.log("user id " + id);
+
         const connection = await User.find({from_user_id: id, to_user_id: userId});
 
         if(!connection){
@@ -264,11 +268,11 @@ export const acceptConectionRequest = async (req, res) => {
         }
         
         const user = await User.findById(userId);
-        user.connections.puch(id);
+        user.connections.push(id);
         await user.save();
 
         const toUser = await User.findById(id);
-        toUser.connections.puch(userId);
+        toUser.connections.push(userId);
         await toUser.save();
         
         connection.status = 'accepted';
